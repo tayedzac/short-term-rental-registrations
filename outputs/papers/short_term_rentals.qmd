@@ -1,0 +1,122 @@
+---
+title: "Short-Term Rentals Registrations"
+subtitle: "Exploring the property registrations in Toronto's 25 Wards."
+author: "Tayedza Allison Chikumbirike"
+date: "February 4 2023"
+date-format: long
+abstract: "Short-term rentals have become increasingly popular, especially in major cities like Toronto where there are multiple opportunities for tourism. This report investigates the short-term rental registrations in Toronto’s 25 wards to determine where one is more or less likely to find a short-term rental. With further investigation, this data could explore more on the characteristics of the 25 wards to help tenants and property owners determine where they would like to interact with short-term rentals."
+format: pdf
+toc: true
+thanks: "Code and data are available at: https://github.com/tayedzac/short-term-rental-registrations"
+bibliography: references.bib
+---
+```{r}
+#| echo: false
+
+#### Preamble ####
+# Purpose: Write an analysis on the short-term rental registrations.
+# Author: Tayedza Chikumbirike
+# Email: t.chikumbirike@mail.utoronto.ca
+# Date: 1 February 2023
+# Prerequisites: Data must have been cleaned.
+```
+
+```{r}
+#| echo: false
+#| message: false
+
+#### WORKSPACE SETUP ####
+library(dplyr)
+library(tidyverse)
+library(janitor)
+library(ggplot2)
+```
+
+\newpage
+
+# Introduction
+As digitization increases our access to various forms of media and technology, short-term rentals have become increasingly popular [@short_term_stats]. A short-term rental refers to the rental of properties such as apartments, rooms, houses, etc. for a short period of time [@short_term_city]. The City of Toronto defines the length of short-term as less than 28 days. These rentals are typically distributed on online platforms such as Airbnb as they make these properties more accessible to foreigners and local citizens. Furthermore, these platforms facilitate smoother connections as they easily connect potential tenants with property owners.
+
+This data set is important to explore because we are able to gain a better understanding of types of information that may be valuable to tenants and property owners. This is a point of interest because this data provides insights into what residential areas are more or less popular with short-term rentals along with the characteristics of these various locations. I will be exploring if the data provided by The City of Toronto is sufficient enough for tenants and property owners to gauge a better understanding of residential areas with short-term rentals.
+
+# Data
+In order to explore more about the short-term rental properties that were registered in Toronto, I used a data set from Open Data Toronto [@opendatatoronto] which is a collection of all the rentals that are registered through the City of Toronto. It contains 6,509 different properties and each of these properties contains a unique property id, registration number, postal code, ward number, and ward name. Toronto has established 25 different wards which are all indicated in the data. I was able to clean this raw data set and extract relevant information for my analysis using **R** [@R], **dplyr** [@dplyr]  **janitor** [@janitor], **tidyr** [@tidyr] and **tidyverse** [@tidyverse].
+
+The first step to cleaning the data was determining what columns I wanted to keep versus eliminate. I eliminated the unique property id and registration number because those are not recognizable forms of identification to the average person. Instead, I chose to keep the ward name, and postal code. Next, I used the **group_by** function [@dplyr] to group all of the properties from the same ward together. This made the process of determining how many properties are in each ward easier once I applied the **count** function  [@dplyr]. Lastly, I removed all the properties that didn’t specify a ward name as well as re-group properties from the same ward name but contained varying character spacing [@tidyr].
+
+ \newpage
+
+```{r}
+#| echo: false
+#| message: false
+#| tbl-cap: "Number of Short Term Rental Registrations per Ward"
+#| label: tbl-1
+
+# Data Table
+clean_data <- read.csv("~/short_term_rental_registrations/inputs/clean_data.csv")
+
+num_properties = count(clean_data, ward_name)
+
+table_1 <- knitr::kable(num_properties, col.names = c("Ward Name", "Number of Registered Properties"), "simple")
+
+table_1
+```
+
+@tbl-1 was created using **knitr** once the data set was cleaned [@knitr]. This table shows the list of the 25 different wards in Toronto sorted in alphabetical order along with the number of rentals registered in that specific ward. Using **ggplot**, I created a flipped column graph which creates a visual aspect of the data thus making it easier to better understand which wards have more or fewer registrations [@ggplot2].
+
+\newpage
+
+```{r}
+#| echo: false
+#| fig-cap: "Graph of Short Term Rental Registrations per Ward"
+#| label: fig-1
+
+num_properties |>
+  ggplot(aes(x = ward_name, y = n, fill = ward_name)) +
+  theme(legend.key.size = unit(0.3, 'cm')) +
+  theme(legend.position="bottom") +
+  geom_col() +
+  theme(legend.position = "none") +
+  labs(x = "Ward") +
+  labs(y = "Number of Properties Registered") +
+  labs(title = "Toronto Short-Term Rental Registrations") +
+  coord_flip()
+```
+
+# Results
+Looking at @fig-1, we can see that ward Spadina-Fort York has the most short-term rental registrations with 1,759 properties. This is 1,183 more registrations than Toronto Center which is the ward with the second-highest amount of registrations at 576 properties. To better understand the distribution of properties, the pie chart below (@fig-2) shows the number of registrations that the 5 largest wards had in comparison to the lower 20 wards. Those top five in descending order are Spadina-Fort York, Toronto Center, University-Rosedale, Davenport, and Toronto-Danforth.
+
+\newpage
+
+```{r}
+#| echo: false
+#| results: hide
+
+# creating a bar plot that will be transformed into a pie chart
+
+pie_data <- data.frame(Group = c("Top 20%", "Bottom 80%"), Value = c(3592, 2914))
+bar <- ggplot(pie_data, aes(x = "", y = Value, fill = Group)) +
+  geom_bar(width = 1, stat = "identity")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Registration comparison of the top 20% vs. the lower 80%"
+#| label: fig-2
+
+pie_chart <- bar + coord_polar("y", start = 0) +
+  labs(title = "Top 20% of Wards vs. Bottom 80% of Wards") +
+  theme(panel.background = element_blank()) +
+  theme(axis.title = element_blank())
+
+pie_chart
+```
+
+Looking at @fig-2, the five highest wards consisted of 3592 registered properties and the lower 20 wards consisted of 2914 registered properties. This information is useful to both tenants and property owners. By understanding this data, prospective tenants will be able to see which wards in Toronto are more likely to have short-term rental availability for them. Additionally, they are able to estimate how populated a specific area may be. This information is valuable to prospective property owners who are looking to rent out their properties. For example, they can consider registering a property located in the top 5 wards as they can assume that those areas have more traffic when it comes to short-term rentals. On the other hand, they can consider registering a property in the bottom 20 wards because they know that there aren't as many properties to compete with.
+
+# Conclusion
+Statistics gathered regarding short-term rental registrations in Toronto is extremely valuable to both tenants and property owners as they are provided with greater insights on where to purchase/ find potential properties that suit their needs. Considering that short-term rentals are becoming increasingly popular through the use of online platforms such as Airbnb, I think it is important to consider adding more information regarding the wards themselves. This could include exploring the wards in more depth by including information such as ward population. This way prospective tenants and property owners better understand their short-term rental locations. Lastly, incorporating information regarding how frequent short-term rentals occur in these areas would be insightful specifically for owners who are considering to rent out their properties.
+
+\newpage
+
+# References

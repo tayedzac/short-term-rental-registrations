@@ -41,4 +41,4 @@ clean_data <- clean_data |>
   )
 
 
-write.csv(clean_data, "~/short_term_rental_registrations/inputs/clean_data.csv")
+write.csv("~/short_term_rental_registrations/inputs/clean_data.csv")
